@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1c1915" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Black Hole III — ONE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #1c1915;
+      --bg-soft: #25201b;
+      --paper: #f3ebe0;
+      --paper-shadow: #e8dcc8;
+      --ink: #2a241c;
+      --ink-soft: #5c5348;
+      --gold: #e0b86a;
+      --gold-bright: #f0d08a;
+      --gold-dim: #b8924a;
+      --line: rgba(224, 184, 106, 0.25);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--gold);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(24px + var(--safe-top)) 20px calc(24px + var(--safe-bottom));
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.7s;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .serif {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+    .poem-line {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: var(--ink);
+      margin-bottom: 0.55em;
+      font-weight: 400;
+    }
+    .poem-line:last-child { margin-bottom: 0; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 28px;
+      border: 1px solid var(--gold-dim);
+      background: transparent;
+      color: var(--gold);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.15rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background 0.35s, color 0.35s, border-color 0.35s, transform 0.2s;
+      border-radius: 2px;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn.primary {
+      background: var(--gold);
+      color: var(--bg);
+      border-color: var(--gold);
+    }
+    .btn.primary:active { background: var(--gold-bright); }
+    .btn.ghost {
+      border-color: transparent;
+      color: var(--gold-dim);
+      font-size: 1rem;
+    }
+    .btn-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 28px;
+    }
+
+    #landing {
+      background: var(--bg);
+      justify-content: flex-start;
+      padding-top: calc(40px + var(--safe-top));
+    }
+    .book-stage {
+      width: 100%;
+      max-width: 340px;
+      perspective: 1200px;
+      margin: 0 auto 32px;
+    }
+    .book {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1.45 / 1;
+      transform-style: preserve-3d;
+      transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.9s;
+    }
+    .book.folding {
+      transform: rotateY(-18deg) scale(0.92);
+      opacity: 0.25;
+    }
+    .page {
+      position: absolute;
+      top: 0;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(165deg, var(--paper) 0%, var(--paper-shadow) 100%);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    }
+    .page.left {
+      left: 0;
+      border-radius: 4px 0 0 4px;
+      background: linear-gradient(to right, #e5d9c8, var(--paper));
+    }
+    .page.right {
+      right: 0;
+      border-radius: 0 4px 4px 0;
+      padding: 18px 14px 18px 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .spine {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 6px;
+      height: 100%;
+      transform: translateX(-50%);
+      background: linear-gradient(to right, #c4b49a, #d8cbb4, #c4b49a);
+      z-index: 2;
+      box-shadow: 0 0 8px rgba(0,0,0,0.15);
+    }
+    .page-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .final-paragraph {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: var(--ink);
+      flex: 1;
+      overflow: hidden;
+    }
+    .final-paragraph .placeholder {
+      color: var(--ink-soft);
+      font-style: italic;
+      opacity: 0.7;
+    }
+    .invitation {
+      text-align: center;
+      max-width: 300px;
+      margin: 0 auto 28px;
+    }
+    .invitation p {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      line-height: 1.45;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .logo-mark {
+      position: absolute;
+      top: calc(12px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.28em;
+      color: var(--gold-dim);
+      opacity: 0.7;
+    }
+
+    #rules {
+      background: var(--bg);
+      text-align: center;
+    }
+    .rules-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      margin-bottom: 36px;
+    }
+
+    #poem {
+      background: var(--bg);
+      justify-content: flex-start;
+      padding-top: calc(32px + var(--safe-top));
+    }
+    .poem-panel {
+      width: 100%;
+      max-width: 380px;
+      background: var(--paper);
+      color: var(--ink);
+      padding: 28px 22px;
+      border-radius: 3px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      margin-bottom: 28px;
+    }
+    .poem-panel .reinforcement {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(42,36,28,0.12);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      color: var(--ink-soft);
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    #submit {
+      background: var(--bg);
+      justify-content: flex-start;
+      padding-top: calc(28px + var(--safe-top));
+    }
+    .submit-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 4px;
+      padding: 24px 20px 28px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.28);
+    }
+    .submit-card h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 500;
+      margin-bottom: 18px;
+      color: var(--ink);
+      text-align: center;
+    }
+    .mode-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(42,36,28,0.18);
+      background: transparent;
+      color: var(--ink-soft);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.25s;
+    }
+    .mode-tab.active {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      padding: 14px;
+      border: 1px solid rgba(42,36,28,0.15);
+      background: #faf6f0;
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      resize: vertical;
+      border-radius: 2px;
+      outline: none;
+    }
+    textarea:focus { border-color: var(--gold-dim); }
+    textarea::placeholder { color: var(--ink-soft); opacity: 0.7; }
+
+    .voice-area {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0 8px;
+    }
+    .voice-area.active { display: flex; }
+    .record-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 2px solid var(--ink);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .record-btn .dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #a33;
+      transition: all 0.25s;
+    }
+    .record-btn.recording {
+      border-color: #c44;
+      animation: pulse-ring 1.6s ease-out infinite;
+    }
+    .record-btn.recording .dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: #c44;
+    }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(180, 60, 60, 0.35); }
+      70% { box-shadow: 0 0 0 18px rgba(180, 60, 60, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(180, 60, 60, 0); }
+    }
+    .voice-status {
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+      min-height: 1.2em;
+    }
+    .voice-controls {
+      display: none;
+      gap: 12px;
+      align-items: center;
+    }
+    .voice-controls.show { display: flex; }
+    .small-btn {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      border: 1px solid rgba(42,36,28,0.2);
+      background: transparent;
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', serif;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      margin-top: 14px;
+      border: 1px solid rgba(42,36,28,0.15);
+      background: #faf6f0;
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: var(--gold-dim); }
+    .consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 18px 0 22px;
+      font-size: 0.82rem;
+      color: var(--ink-soft);
+      line-height: 1.4;
+      cursor: pointer;
+    }
+    .consent input {
+      margin-top: 3px;
+      accent-color: var(--ink);
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .submit-actions {
+      display: flex;
+      justify-content: center;
+    }
+    .submit-actions .btn.primary {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+      min-width: 140px;
+    }
+
+    #thanks {
+      background: var(--bg);
+      text-align: center;
+    }
+    .thanks-message {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      line-height: 1.5;
+      color: var(--gold);
+      max-width: 300px;
+      margin-bottom: 8px;
+    }
+    .thanks-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--gold-dim);
+      margin-bottom: 36px;
+    }
+
+    #progress {
+      background: var(--bg);
+      justify-content: flex-start;
+      padding-top: calc(28px + var(--safe-top));
+      padding-bottom: calc(40px + var(--safe-bottom));
+    }
+    .progress-header {
+      text-align: center;
+      margin-bottom: 28px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .progress-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .progress-header p {
+      font-size: 0.85rem;
+      color: var(--gold-dim);
+      opacity: 0.85;
+    }
+    .submission-list {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sub-card {
+      background: var(--paper);
+      color: var(--ink);
+      padding: 18px 16px;
+      border-radius: 3px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    }
+    .sub-card .label {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 8px;
+    }
+    .sub-card .body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+    .back-link {
+      margin-top: 32px;
+      text-align: center;
+    }
+
+    .hidden { display: none !important; }
+    .fade-in {
+      animation: fadeIn 0.8s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .screen, .book, .btn, .record-btn { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LANDING -->
+  <section id="landing" class="screen active">
+    <div class="logo-mark">BLACK HOLE III</div>
+
+    <div class="book-stage">
+      <div class="book" id="book">
+        <div class="page left"></div>
+        <div class="spine"></div>
+        <div class="page right">
+          <div class="page-label">Last page</div>
+          <div class="final-paragraph">
+            <span class="placeholder">[ the final paragraph will live here ]</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="invitation">
+      <p>You already know how it ends.</p>
+      <p>Now tell me how it begins.</p>
+    </div>
+
+    <button class="btn primary" id="btn-unfold">unfold the beginning</button>
+  </section>
+
+  <!-- RULES -->
+  <section id="rules" class="screen">
+    <div class="rules-title serif">there are NO rules</div>
+    <div class="btn-row">
+      <button class="btn" id="btn-example">example</button>
+      <button class="btn primary" id="btn-begin">begin</button>
+    </div>
+  </section>
+
+  <!-- POEM -->
+  <section id="poem" class="screen">
+    <div class="poem-panel fade-in">
+      <p class="poem-line">be revelation before genesis</p>
+      <p class="poem-line">be love after death</p>
+      <p class="poem-line">feminine and masculine united</p>
+      <p class="poem-line">be reborn - an infant, child, elderly and go backwards until you’re intention.</p>
+      <p class="poem-line">have pride, greed, lust, envy, gluttony, wrath, sloth - aren’t those the seven heavenly virtues of salvation?</p>
+      <p class="poem-line">live in the past of the year 2369.</p>
+      <p class="poem-line">live in a future where time doesn’t exist.</p>
+      <p class="poem-line">you’re a dragon, a fairy, a giant wolf, invisible elf, golden tree, you’re Jesus sharing breakfast with Judas.</p>
+      <p class="poem-line">be moons of Saturn and the Karma itself combined in all non-existing beings, locking all existing beings forever on Earth.</p>
+      <p class="poem-line">be fire. air. earth. water. ether. be comets and galaxies. be so many stars until you discover yourself a black hole.</p>
+      <p class="poem-line">finally, let your imagination fall into silence, and find yourself in the beginning of ONE.</p>
+      <div class="reinforcement">there are NO rules.</div>
+    </div>
+    <button class="btn primary" id="btn-begin-from-poem">begin</button>
+  </section>
+
+  <!-- SUBMISSION -->
+  <section id="submit" class="screen">
+    <div class="submit-card">
+      <h2>the first paragraph</h2>
+
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="text">Text</button>
+        <button class="mode-tab" data-mode="voice">Voice</button>
+      </div>
+
+      <div id="text-mode">
+        <textarea id="text-input" placeholder="Write the first paragraph of the first page of the first book…"></textarea>
+      </div>
+
+      <div id="voice-mode" class="voice-area">
+        <button class="record-btn" id="record-btn" aria-label="Record">
+          <span class="dot"></span>
+        </button>
+        <div class="voice-status" id="voice-status">Tap to record</div>
+        <div class="voice-controls" id="voice-controls">
+          <button class="small-btn" id="btn-play">Play</button>
+          <button class="small-btn" id="btn-rerecord">Re-record</button>
+        </div>
+        <audio id="audio-playback" class="hidden"></audio>
+      </div>
+
+      <input type="text" id="name-input" placeholder="Name or handle (optional)" maxlength="60" />
+
+      <label class="consent">
+        <input type="checkbox" id="consent" />
+        <span>I give permission for my contribution to be used or adapted in this project.</span>
+      </label>
+
+      <div class="submit-actions">
+        <button class="btn primary" id="btn-submit">Submit</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- THANK YOU -->
+  <section id="thanks" class="screen">
+    <div class="thanks-message serif">
+      your beginning unfolds the past<br>and rewrites the future.
+    </div>
+    <div class="thanks-sub serif">thank you.</div>
+    <div class="btn-row">
+      <button class="btn" id="btn-again">start again</button>
+      <button class="btn primary" id="btn-progress">check progress</button>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="progress" class="screen">
+    <div class="progress-header">
+      <h1 class="serif">Progress</h1>
+      <p>anonymous beginnings · curated</p>
+    </div>
+
+    <div class="submission-list" id="submission-list">
+      <article class="sub-card">
+        <div class="label">Anonymous</div>
+        <div class="body">The first light was not light at all. It was the decision to stop running from the dark that already knew my name.</div>
+      </article>
+      <article class="sub-card">
+        <div class="label">Anonymous</div>
+        <div class="body">I woke up already missing a future that had not yet chosen me. The mirror held only the sound of a door closing in another room.</div>
+      </article>
+      <article class="sub-card">
+        <div class="label">Anonymous</div>
+        <div class="body">Before the first word there was a shared breath. We did not know it belonged to both of us until it left.</div>
+      </article>
+    </div>
+
+    <div class="back-link">
+      <button class="btn ghost" id="btn-back-home">return to the beginning</button>
+    </div>
+  </section>
+
+  <script>
+    const screens = {
+      landing: document.getElementById('landing'),
+      rules: document.getElementById('rules'),
+      poem: document.getElementById('poem'),
+      submit: document.getElementById('submit'),
+      thanks: document.getElementById('thanks'),
+      progress: document.getElementById('progress')
+    };
+
+    function show(name) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      screens[name].classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    const book = document.getElementById('book');
+    document.getElementById('btn-unfold').addEventListener('click', () => {
+      book.classList.add('folding');
+      setTimeout(() => {
+        show('rules');
+        book.classList.remove('folding');
+      }, 750);
+    });
+
+    document.getElementById('btn-example').addEventListener('click', () => show('poem'));
+    document.getElementById('btn-begin').addEventListener('click', () => show('submit'));
+    document.getElementById('btn-begin-from-poem').addEventListener('click', () => show('submit'));
+
+    const textMode = document.getElementById('text-mode');
+    const voiceMode = document.getElementById('voice-mode');
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const mode = tab.dataset.mode;
+        if (mode === 'text') {
+          textMode.style.display = 'block';
+          voiceMode.classList.remove('active');
+        } else {
+          textMode.style.display = 'none';
+          voiceMode.classList.add('active');
+        }
+      });
+    });
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioBlob = null;
+    let isRecording = false;
+
+    const recordBtn = document.getElementById('record-btn');
+    const voiceStatus = document.getElementById('voice-status');
+    const voiceControls = document.getElementById('voice-controls');
+    const audioPlayback = document.getElementById('audio-playback');
+
+    recordBtn.addEventListener('click', async () => {
+      if (isRecording) {
+        stopRecording();
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          audioPlayback.src = URL.createObjectURL(audioBlob);
+          voiceControls.classList.add('show');
+          voiceStatus.textContent = 'Recording saved';
+          stream.getTracks().forEach(t => t.stop());
+        };
+        mediaRecorder.start();
+        isRecording = true;
+        recordBtn.classList.add('recording');
+        voiceStatus.textContent = 'Recording… tap to stop';
+        voiceControls.classList.remove('show');
+      } catch (err) {
+        voiceStatus.textContent = 'Microphone not available';
+        console.warn(err);
+      }
+    });
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        recordBtn.classList.remove('recording');
+      }
+    }
+
+    document.getElementById('btn-play').addEventListener('click', () => {
+      audioPlayback.play();
+    });
+    document.getElementById('btn-rerecord').addEventListener('click', () => {
+      audioBlob = null;
+      audioPlayback.src = '';
+      voiceControls.classList.remove('show');
+      voiceStatus.textContent = 'Tap to record';
+    });
+
+    document.getElementById('btn-submit').addEventListener('click', () => {
+      const consent = document.getElementById('consent').checked;
+      if (!consent) {
+        alert('Please give permission to continue.');
+        return;
+      }
+
+      const mode = document.querySelector('.mode-tab.active').dataset.mode;
+      const name = document.getElementById('name-input').value.trim() || 'Anonymous';
+      let content = '';
+
+      if (mode === 'text') {
+        content = document.getElementById('text-input').value.trim();
+        if (!content) {
+          alert('Please write something, or switch to voice.');
+          return;
+        }
+      } else {
+        if (!audioBlob) {
+          alert('Please record a voice message first.');
+          return;
+        }
+        content = '[voice recording]';
+      }
+
+      const entry = {
+        name,
+        mode,
+        content,
+        timestamp: new Date().toISOString()
+      };
+      console.log('New beginning received:', entry);
+
+      try {
+        const prev = JSON.parse(localStorage.getItem('bh3_submissions') || '[]');
+        prev.push(entry);
+        localStorage.setItem('bh3_submissions', JSON.stringify(prev.slice(-20)));
+      } catch (_) {}
+
+      show('thanks');
+    });
+
+    document.getElementById('btn-again').addEventListener('click', () => {
+      document.getElementById('text-input').value = '';
+      document.getElementById('name-input').value = '';
+      document.getElementById('consent').checked = false;
+      audioBlob = null;
+      audioPlayback.src = '';
+      voiceControls.classList.remove('show');
+      voiceStatus.textContent = 'Tap to record';
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.mode-tab[data-mode="text"]').classList.add('active');
+      textMode.style.display = 'block';
+      voiceMode.classList.remove('active');
+      show('landing');
+    });
+
+    document.getElementById('btn-progress').addEventListener('click', () => show('progress'));
+    document.getElementById('btn-back-home').addEventListener('click', () => show('landing'));
+  </script>
+</body>
+</html>
