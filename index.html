@@ -3,25 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
-  <meta name="theme-color" content="#1c1915" />
+  <meta name="theme-color" content="#0a0908" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Black Hole III — ONE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #1c1915;
-      --bg-soft: #25201b;
+      --bg: #0a0908;
       --paper: #f3ebe0;
-      --paper-shadow: #e8dcc8;
+      --paper-dark: #e8dcc8;
       --ink: #2a241c;
       --ink-soft: #5c5348;
       --gold: #e0b86a;
       --gold-bright: #f0d08a;
       --gold-dim: #b8924a;
-      --line: rgba(224, 184, 106, 0.25);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -39,18 +37,36 @@
       overscroll-behavior: none;
     }
 
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: url('assets/bg-blackhole.jpg') center center / cover no-repeat;
+      pointer-events: none;
+    }
+    .bg-veil {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: rgba(8,7,6,0.55);
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    .bg-veil.dim { opacity: 0.78; }
+
     .screen {
       position: fixed;
       inset: 0;
+      z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: calc(24px + var(--safe-top)) 20px calc(24px + var(--safe-bottom));
+      padding: calc(20px + var(--safe-top)) 20px calc(24px + var(--safe-bottom));
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.7s;
+      transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), visibility 0.7s;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -60,96 +76,137 @@
       pointer-events: auto;
     }
 
-    .serif {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-    }
-    .poem-line {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.05rem;
-      line-height: 1.55;
-      color: var(--ink);
-      margin-bottom: 0.55em;
-      font-weight: 400;
-    }
-    .poem-line:last-child { margin-bottom: 0; }
+    .serif { font-family: 'Cormorant Garamond', Georgia, serif; }
 
-    .btn {
-      display: inline-flex;
+    .line-action {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      padding: 0 28px;
-      border: 1px solid var(--gold-dim);
-      background: transparent;
+      gap: 6px;
+      background: none;
+      border: none;
       color: var(--gold);
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 1.15rem;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       cursor: pointer;
-      transition: background 0.35s, color 0.35s, border-color 0.35s, transform 0.2s;
-      border-radius: 2px;
+      padding: 10px 16px;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
+      transition: color 0.3s, opacity 0.3s;
     }
-    .btn:active { transform: scale(0.97); }
-    .btn.primary {
+    .line-action .line {
+      width: 64px;
+      height: 1px;
+      background: var(--gold-dim);
+      transition: width 0.4s, background 0.4s, box-shadow 0.4s;
+    }
+    .line-action.primary .line {
+      width: 88px;
       background: var(--gold);
-      color: var(--bg);
-      border-color: var(--gold);
     }
-    .btn.primary:active { background: var(--gold-bright); }
-    .btn.ghost {
-      border-color: transparent;
-      color: var(--gold-dim);
-      font-size: 1rem;
+    .line-action.glow .line {
+      box-shadow: 0 0 10px rgba(224,184,106,0.55);
+      background: var(--gold-bright);
     }
-    .btn-row {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 28px;
-    }
+    .line-action:active { opacity: 0.7; }
 
     #landing {
-      background: var(--bg);
       justify-content: flex-start;
-      padding-top: calc(40px + var(--safe-top));
+      padding-top: calc(36px + var(--safe-top));
     }
+    .title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      font-style: italic;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 28px;
+      opacity: 0.9;
+    }
+
     .book-stage {
       width: 100%;
-      max-width: 340px;
-      perspective: 1200px;
-      margin: 0 auto 32px;
-    }
-    .book {
+      max-width: 300px;
+      margin: 0 auto 24px;
       position: relative;
+    }
+
+    .book-closed {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: url('assets/cover.png') center center / cover no-repeat;
+      border-radius: 4px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.55), 0 0 40px rgba(224,184,106,0.08);
+      transition: transform 0.6s ease, opacity 0.6s ease;
+      cursor: pointer;
+    }
+    .book-closed.hidden {
+      opacity: 0;
+      transform: scale(0.92);
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .open-prompt {
+      text-align: center;
+      margin-top: 18px;
+      transition: opacity 0.4s;
+    }
+    .open-prompt.hidden { opacity: 0; pointer-events: none; }
+    .open-prompt .label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem;
+      color: var(--gold-dim);
+      letter-spacing: 0.15em;
+      text-transform: lowercase;
+      margin-bottom: 8px;
+    }
+    .open-prompt .pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold);
+      margin: 0 auto;
+      animation: openPulse 2.2s ease-in-out infinite;
+      box-shadow: 0 0 12px rgba(224,184,106,0.6);
+    }
+    @keyframes openPulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.35); opacity: 1; }
+    }
+
+    .book-open {
       width: 100%;
       aspect-ratio: 1.45 / 1;
-      transform-style: preserve-3d;
-      transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.9s;
+      position: relative;
+      opacity: 0;
+      transform: scale(0.96);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+      pointer-events: none;
     }
-    .book.folding {
-      transform: rotateY(-18deg) scale(0.92);
-      opacity: 0.25;
+    .book-open.visible {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
     }
     .page {
       position: absolute;
       top: 0;
       width: 50%;
       height: 100%;
-      background: linear-gradient(165deg, var(--paper) 0%, var(--paper-shadow) 100%);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+      background: linear-gradient(165deg, var(--paper) 0%, var(--paper-dark) 100%);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.4);
     }
     .page.left {
       left: 0;
-      border-radius: 4px 0 0 4px;
-      background: linear-gradient(to right, #e5d9c8, var(--paper));
+      border-radius: 3px 0 0 3px;
+      background: linear-gradient(to right, #e2d6c4, var(--paper));
     }
     .page.right {
       right: 0;
-      border-radius: 0 4px 4px 0;
-      padding: 18px 14px 18px 16px;
+      border-radius: 0 3px 3px 0;
+      padding: 16px 14px 16px 16px;
       display: flex;
       flex-direction: column;
     }
@@ -157,446 +214,369 @@
       position: absolute;
       left: 50%;
       top: 0;
-      width: 6px;
+      width: 5px;
       height: 100%;
       transform: translateX(-50%);
       background: linear-gradient(to right, #c4b49a, #d8cbb4, #c4b49a);
       z-index: 2;
-      box-shadow: 0 0 8px rgba(0,0,0,0.15);
     }
     .page-label {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
       color: var(--ink-soft);
       text-transform: uppercase;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .final-paragraph {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       line-height: 1.5;
-      color: var(--ink);
-      flex: 1;
-      overflow: hidden;
-    }
-    .final-paragraph .placeholder {
       color: var(--ink-soft);
       font-style: italic;
-      opacity: 0.7;
+      flex: 1;
     }
+
     .invitation {
       text-align: center;
-      max-width: 300px;
-      margin: 0 auto 28px;
+      margin: 20px 0 18px;
+      opacity: 0;
+      transition: opacity 0.6s ease 0.3s;
     }
+    .invitation.visible { opacity: 1; }
     .invitation p {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       line-height: 1.45;
       color: var(--gold);
-      margin-bottom: 6px;
-    }
-    .logo-mark {
-      position: absolute;
-      top: calc(12px + var(--safe-top));
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.75rem;
-      letter-spacing: 0.28em;
-      color: var(--gold-dim);
-      opacity: 0.7;
     }
 
-    #rules {
-      background: var(--bg);
-      text-align: center;
+    .landing-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      opacity: 0;
+      transition: opacity 0.6s ease 0.45s;
     }
+    .landing-actions.visible { opacity: 1; }
+
+    #rules { text-align: center; }
     .rules-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.6rem;
-      letter-spacing: 0.08em;
+      font-size: 1.55rem;
+      letter-spacing: 0.06em;
       color: var(--gold);
-      margin-bottom: 36px;
+      margin-bottom: 42px;
+    }
+    .rules-title .no {
+      font-weight: 600;
+      color: var(--gold-bright);
+      font-size: 1.7rem;
+      letter-spacing: 0.08em;
+    }
+    .rules-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
     }
 
-    #poem {
-      background: var(--bg);
-      justify-content: flex-start;
-      padding-top: calc(32px + var(--safe-top));
-    }
-    .poem-panel {
+    #examples { padding: 0; justify-content: center; }
+    .carousel {
       width: 100%;
-      max-width: 380px;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    .carousel-track {
+      display: flex;
+      height: 100%;
+      transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+    }
+    .carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+    .carousel-slide img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+    .carousel-ui {
+      position: absolute;
+      bottom: calc(28px + var(--safe-bottom));
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .carousel-ui > * { pointer-events: auto; }
+    .progress-dots { display: flex; gap: 6px; }
+    .progress-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(224,184,106,0.3);
+      transition: background 0.3s, transform 0.3s;
+    }
+    .progress-dots span.active {
+      background: var(--gold);
+      transform: scale(1.3);
+    }
+    .carousel-actions {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .carousel-actions.visible { display: flex; }
+
+    #submit, #thanks, #progress { background: transparent; }
+    .submit-card, .sub-card {
       background: var(--paper);
       color: var(--ink);
-      padding: 28px 22px;
-      border-radius: 3px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-      margin-bottom: 28px;
-    }
-    .poem-panel .reinforcement {
-      margin-top: 22px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(42,36,28,0.12);
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      color: var(--ink-soft);
-      text-align: center;
-      letter-spacing: 0.04em;
-    }
-
-    #submit {
-      background: var(--bg);
-      justify-content: flex-start;
-      padding-top: calc(28px + var(--safe-top));
+      border-radius: 4px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     }
     .submit-card {
       width: 100%;
       max-width: 400px;
-      background: var(--paper);
-      color: var(--ink);
-      border-radius: 4px;
       padding: 24px 20px 28px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.28);
     }
     .submit-card h2 {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 500;
-      margin-bottom: 18px;
-      color: var(--ink);
       text-align: center;
-    }
-    .mode-tabs {
-      display: flex;
-      gap: 8px;
       margin-bottom: 18px;
     }
+    .mode-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
     .mode-tab {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
+      flex: 1; padding: 11px; text-align: center;
       border: 1px solid rgba(42,36,28,0.18);
-      background: transparent;
-      color: var(--ink-soft);
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: all 0.25s;
+      background: transparent; color: var(--ink-soft);
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      cursor: pointer; border-radius: 2px;
     }
-    .mode-tab.active {
-      background: var(--ink);
-      color: var(--paper);
-      border-color: var(--ink);
-    }
+    .mode-tab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
     textarea {
-      width: 100%;
-      min-height: 140px;
-      padding: 14px;
-      border: 1px solid rgba(42,36,28,0.15);
-      background: #faf6f0;
-      color: var(--ink);
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      line-height: 1.5;
-      resize: vertical;
-      border-radius: 2px;
-      outline: none;
+      width: 100%; min-height: 130px; padding: 14px;
+      border: 1px solid rgba(42,36,28,0.15); background: #faf6f0;
+      color: var(--ink); font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem; line-height: 1.5; resize: vertical; border-radius: 2px; outline: none;
     }
-    textarea:focus { border-color: var(--gold-dim); }
-    textarea::placeholder { color: var(--ink-soft); opacity: 0.7; }
-
-    .voice-area {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 0 8px;
-    }
+    .voice-area { display: none; flex-direction: column; align-items: center; gap: 14px; padding: 10px 0; }
     .voice-area.active { display: flex; }
     .record-btn {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      border: 2px solid var(--ink);
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      position: relative;
+      width: 68px; height: 68px; border-radius: 50%; border: 2px solid var(--ink);
+      background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
-    .record-btn .dot {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #a33;
-      transition: all 0.25s;
-    }
-    .record-btn.recording {
-      border-color: #c44;
-      animation: pulse-ring 1.6s ease-out infinite;
-    }
-    .record-btn.recording .dot {
-      width: 18px;
-      height: 18px;
-      border-radius: 4px;
-      background: #c44;
-    }
+    .record-btn .dot { width: 20px; height: 20px; border-radius: 50%; background: #a33; }
+    .record-btn.recording { border-color: #c44; animation: pulse-ring 1.6s ease-out infinite; }
+    .record-btn.recording .dot { width: 16px; height: 16px; border-radius: 3px; background: #c44; }
     @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0 rgba(180, 60, 60, 0.35); }
-      70% { box-shadow: 0 0 0 18px rgba(180, 60, 60, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(180, 60, 60, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(180,60,60,0.35); }
+      70% { box-shadow: 0 0 0 16px rgba(180,60,60,0); }
+      100% { box-shadow: 0 0 0 0 rgba(180,60,60,0); }
     }
-    .voice-status {
-      font-size: 0.85rem;
-      color: var(--ink-soft);
-      min-height: 1.2em;
-    }
-    .voice-controls {
-      display: none;
-      gap: 12px;
-      align-items: center;
-    }
+    .voice-status { font-size: 0.85rem; color: var(--ink-soft); }
+    .voice-controls { display: none; gap: 12px; }
     .voice-controls.show { display: flex; }
     .small-btn {
-      padding: 8px 16px;
-      font-size: 0.9rem;
-      border: 1px solid rgba(42,36,28,0.2);
-      background: transparent;
-      color: var(--ink);
-      font-family: 'Cormorant Garamond', serif;
-      cursor: pointer;
-      border-radius: 2px;
+      padding: 8px 14px; font-size: 0.9rem; border: 1px solid rgba(42,36,28,0.2);
+      background: transparent; color: var(--ink); font-family: 'Cormorant Garamond', serif;
+      cursor: pointer; border-radius: 2px;
     }
     input[type="text"] {
-      width: 100%;
-      padding: 12px 14px;
-      margin-top: 14px;
-      border: 1px solid rgba(42,36,28,0.15);
-      background: #faf6f0;
-      color: var(--ink);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.95rem;
-      border-radius: 2px;
-      outline: none;
+      width: 100%; padding: 12px 14px; margin-top: 12px;
+      border: 1px solid rgba(42,36,28,0.15); background: #faf6f0;
+      color: var(--ink); font-size: 0.95rem; border-radius: 2px; outline: none;
     }
-    input[type="text"]:focus { border-color: var(--gold-dim); }
     .consent {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin: 18px 0 22px;
-      font-size: 0.82rem;
-      color: var(--ink-soft);
-      line-height: 1.4;
-      cursor: pointer;
+      display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 20px;
+      font-size: 0.82rem; color: var(--ink-soft); line-height: 1.4; cursor: pointer;
     }
-    .consent input {
-      margin-top: 3px;
-      accent-color: var(--ink);
-      width: 16px;
-      height: 16px;
-      flex-shrink: 0;
+    .consent input { margin-top: 3px; accent-color: var(--ink); width: 16px; height: 16px; flex-shrink: 0; }
+    .submit-actions { display: flex; justify-content: center; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 46px; padding: 0 26px; border: 1px solid var(--gold-dim);
+      background: transparent; color: var(--gold);
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      letter-spacing: 0.05em; cursor: pointer; border-radius: 2px;
+      -webkit-tap-highlight-color: transparent;
     }
-    .submit-actions {
-      display: flex;
-      justify-content: center;
-    }
-    .submit-actions .btn.primary {
-      background: var(--ink);
-      color: var(--paper);
-      border-color: var(--ink);
-      min-width: 140px;
-    }
+    .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .btn.ghost { border-color: transparent; color: var(--gold-dim); }
 
-    #thanks {
-      background: var(--bg);
-      text-align: center;
-    }
+    #thanks { text-align: center; }
     .thanks-message {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.35rem;
-      line-height: 1.5;
-      color: var(--gold);
-      max-width: 300px;
-      margin-bottom: 8px;
+      font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; line-height: 1.5;
+      color: var(--gold); max-width: 300px; margin-bottom: 8px;
     }
     .thanks-sub {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.1rem;
-      color: var(--gold-dim);
-      margin-bottom: 36px;
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      color: var(--gold-dim); margin-bottom: 32px;
     }
+    .btn-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
 
-    #progress {
-      background: var(--bg);
-      justify-content: flex-start;
-      padding-top: calc(28px + var(--safe-top));
-      padding-bottom: calc(40px + var(--safe-bottom));
-    }
-    .progress-header {
-      text-align: center;
-      margin-bottom: 28px;
-      width: 100%;
-      max-width: 400px;
-    }
+    #progress { justify-content: flex-start; padding-top: calc(28px + var(--safe-top)); }
+    .progress-header { text-align: center; margin-bottom: 24px; width: 100%; max-width: 400px; }
     .progress-header h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.5rem;
-      color: var(--gold);
-      letter-spacing: 0.06em;
-      margin-bottom: 6px;
+      font-family: 'Cormorant Garamond', serif; font-size: 1.45rem;
+      color: var(--gold); letter-spacing: 0.06em; margin-bottom: 6px;
     }
-    .progress-header p {
-      font-size: 0.85rem;
-      color: var(--gold-dim);
-      opacity: 0.85;
-    }
-    .submission-list {
-      width: 100%;
-      max-width: 400px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .sub-card {
-      background: var(--paper);
-      color: var(--ink);
-      padding: 18px 16px;
-      border-radius: 3px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.2);
-    }
+    .progress-header p { font-size: 0.85rem; color: var(--gold-dim); opacity: 0.85; }
+    .submission-list { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 14px; }
+    .sub-card { padding: 16px; }
     .sub-card .label {
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--ink-soft);
-      margin-bottom: 8px;
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-soft); margin-bottom: 8px;
     }
-    .sub-card .body {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      line-height: 1.5;
-    }
-    .back-link {
-      margin-top: 32px;
-      text-align: center;
-    }
-
-    .hidden { display: none !important; }
-    .fade-in {
-      animation: fadeIn 0.8s ease forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .sub-card .body { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; line-height: 1.5; }
+    .back-link { margin-top: 28px; text-align: center; }
 
     @media (prefers-reduced-motion: reduce) {
-      .screen, .book, .btn, .record-btn { transition: none !important; animation: none !important; }
+      .screen, .book-closed, .book-open, .line-action .line, .carousel-track { transition: none !important; }
+      .open-prompt .pulse { animation: none; }
     }
   </style>
 </head>
 <body>
+  <div class="bg-layer"></div>
+  <div class="bg-veil" id="bg-veil"></div>
 
-  <!-- LANDING -->
   <section id="landing" class="screen active">
-    <div class="logo-mark">BLACK HOLE III</div>
+    <div class="title">Black Hole III - ONE</div>
 
     <div class="book-stage">
-      <div class="book" id="book">
+      <div class="book-closed" id="book-closed"></div>
+      <div class="open-prompt" id="open-prompt">
+        <div class="label">open</div>
+        <div class="pulse"></div>
+      </div>
+
+      <div class="book-open" id="book-open">
         <div class="page left"></div>
         <div class="spine"></div>
         <div class="page right">
           <div class="page-label">Last page</div>
-          <div class="final-paragraph">
-            <span class="placeholder">[ the final paragraph will live here ]</span>
-          </div>
+          <div class="final-paragraph">[ intentionally blank ]</div>
         </div>
       </div>
     </div>
 
-    <div class="invitation">
-      <p>You already know how it ends.</p>
-      <p>Now tell me how it begins.</p>
+    <div class="invitation" id="invitation">
+      <p>the ending already exists</p>
+      <p>the beginning waits for You</p>
     </div>
 
-    <button class="btn primary" id="btn-unfold">unfold the beginning</button>
+    <div class="landing-actions" id="landing-actions">
+      <button class="line-action" id="btn-return-last">
+        return
+        <span class="line"></span>
+      </button>
+      <button class="line-action primary" id="btn-unfold">
+        unfold the beginning
+        <span class="line"></span>
+      </button>
+    </div>
   </section>
 
-  <!-- RULES -->
   <section id="rules" class="screen">
-    <div class="rules-title serif">there are NO rules</div>
-    <div class="btn-row">
-      <button class="btn" id="btn-example">example</button>
-      <button class="btn primary" id="btn-begin">begin</button>
+    <div class="rules-title serif">
+      there are <span class="no">NO</span> rules
+    </div>
+    <div class="rules-actions">
+      <button class="line-action" id="btn-examples">
+        12 examples
+        <span class="line"></span>
+      </button>
+      <button class="line-action primary" id="btn-begin">
+        begin
+        <span class="line"></span>
+      </button>
+      <button class="line-action" id="btn-return-rules">
+        return
+        <span class="line"></span>
+      </button>
     </div>
   </section>
 
-  <!-- POEM -->
-  <section id="poem" class="screen">
-    <div class="poem-panel fade-in">
-      <p class="poem-line">be revelation before genesis</p>
-      <p class="poem-line">be love after death</p>
-      <p class="poem-line">feminine and masculine united</p>
-      <p class="poem-line">be reborn - an infant, child, elderly and go backwards until you’re intention.</p>
-      <p class="poem-line">have pride, greed, lust, envy, gluttony, wrath, sloth - aren’t those the seven heavenly virtues of salvation?</p>
-      <p class="poem-line">live in the past of the year 2369.</p>
-      <p class="poem-line">live in a future where time doesn’t exist.</p>
-      <p class="poem-line">you’re a dragon, a fairy, a giant wolf, invisible elf, golden tree, you’re Jesus sharing breakfast with Judas.</p>
-      <p class="poem-line">be moons of Saturn and the Karma itself combined in all non-existing beings, locking all existing beings forever on Earth.</p>
-      <p class="poem-line">be fire. air. earth. water. ether. be comets and galaxies. be so many stars until you discover yourself a black hole.</p>
-      <p class="poem-line">finally, let your imagination fall into silence, and find yourself in the beginning of ONE.</p>
-      <div class="reinforcement">there are NO rules.</div>
+  <section id="examples" class="screen">
+    <div class="carousel" id="carousel">
+      <div class="carousel-track" id="carousel-track">
+        <div class="carousel-slide"><img src="assets/example-01.jpg" alt="1" /></div>
+        <div class="carousel-slide"><img src="assets/example-02.jpg" alt="2" /></div>
+        <div class="carousel-slide"><img src="assets/example-03.jpg" alt="3" /></div>
+        <div class="carousel-slide"><img src="assets/example-04.jpg" alt="4" /></div>
+        <div class="carousel-slide"><img src="assets/example-05.jpg" alt="5" /></div>
+        <div class="carousel-slide"><img src="assets/example-06.jpg" alt="6" /></div>
+        <div class="carousel-slide"><img src="assets/example-07.jpg" alt="7" /></div>
+        <div class="carousel-slide"><img src="assets/example-08.jpg" alt="8" /></div>
+        <div class="carousel-slide"><img src="assets/example-09.jpg" alt="9" /></div>
+        <div class="carousel-slide"><img src="assets/example-10.jpg" alt="10" /></div>
+        <div class="carousel-slide"><img src="assets/example-11.jpg" alt="11" /></div>
+        <div class="carousel-slide"><img src="assets/example-12.jpg" alt="12" /></div>
+        <div class="carousel-slide"><img src="assets/example-bridge.jpg" alt="bridge" /></div>
+      </div>
+      <div class="carousel-ui">
+        <div class="progress-dots" id="progress-dots"></div>
+        <div class="carousel-actions" id="carousel-actions">
+          <button class="line-action" id="btn-ex-begin">
+            begin
+            <span class="line"></span>
+          </button>
+          <button class="line-action primary" id="btn-ex-start">
+            start
+            <span class="line"></span>
+          </button>
+        </div>
+      </div>
     </div>
-    <button class="btn primary" id="btn-begin-from-poem">begin</button>
   </section>
 
-  <!-- SUBMISSION -->
   <section id="submit" class="screen">
     <div class="submit-card">
       <h2>the first paragraph</h2>
-
       <div class="mode-tabs">
         <button class="mode-tab active" data-mode="text">Text</button>
         <button class="mode-tab" data-mode="voice">Voice</button>
       </div>
-
       <div id="text-mode">
         <textarea id="text-input" placeholder="Write the first paragraph of the first page of the first book…"></textarea>
       </div>
-
       <div id="voice-mode" class="voice-area">
-        <button class="record-btn" id="record-btn" aria-label="Record">
-          <span class="dot"></span>
-        </button>
+        <button class="record-btn" id="record-btn" aria-label="Record"><span class="dot"></span></button>
         <div class="voice-status" id="voice-status">Tap to record</div>
         <div class="voice-controls" id="voice-controls">
           <button class="small-btn" id="btn-play">Play</button>
           <button class="small-btn" id="btn-rerecord">Re-record</button>
         </div>
-        <audio id="audio-playback" class="hidden"></audio>
+        <audio id="audio-playback" style="display:none"></audio>
       </div>
-
       <input type="text" id="name-input" placeholder="Name or handle (optional)" maxlength="60" />
-
       <label class="consent">
         <input type="checkbox" id="consent" />
         <span>I give permission for my contribution to be used or adapted in this project.</span>
       </label>
-
       <div class="submit-actions">
         <button class="btn primary" id="btn-submit">Submit</button>
       </div>
     </div>
   </section>
 
-  <!-- THANK YOU -->
   <section id="thanks" class="screen">
     <div class="thanks-message serif">
       your beginning unfolds the past<br>and rewrites the future.
@@ -608,14 +588,12 @@
     </div>
   </section>
 
-  <!-- PROGRESS -->
   <section id="progress" class="screen">
     <div class="progress-header">
       <h1 class="serif">Progress</h1>
       <p>anonymous beginnings · curated</p>
     </div>
-
-    <div class="submission-list" id="submission-list">
+    <div class="submission-list">
       <article class="sub-card">
         <div class="label">Anonymous</div>
         <div class="body">The first light was not light at all. It was the decision to stop running from the dark that already knew my name.</div>
@@ -629,7 +607,6 @@
         <div class="body">Before the first word there was a shared breath. We did not know it belonged to both of us until it left.</div>
       </article>
     </div>
-
     <div class="back-link">
       <button class="btn ghost" id="btn-back-home">return to the beginning</button>
     </div>
@@ -639,30 +616,108 @@
     const screens = {
       landing: document.getElementById('landing'),
       rules: document.getElementById('rules'),
-      poem: document.getElementById('poem'),
+      examples: document.getElementById('examples'),
       submit: document.getElementById('submit'),
       thanks: document.getElementById('thanks'),
       progress: document.getElementById('progress')
     };
+    const veil = document.getElementById('bg-veil');
 
     function show(name) {
       Object.values(screens).forEach(s => s.classList.remove('active'));
       screens[name].classList.add('active');
       window.scrollTo(0, 0);
+      if (name === 'examples' || name === 'submit' || name === 'thanks' || name === 'progress') veil.classList.add('dim');
+      else veil.classList.remove('dim');
     }
 
-    const book = document.getElementById('book');
-    document.getElementById('btn-unfold').addEventListener('click', () => {
-      book.classList.add('folding');
+    const bookClosed = document.getElementById('book-closed');
+    const openPrompt = document.getElementById('open-prompt');
+    const bookOpen = document.getElementById('book-open');
+    const invitation = document.getElementById('invitation');
+    const landingActions = document.getElementById('landing-actions');
+    let bookIsOpen = false;
+
+    function openBook() {
+      if (bookIsOpen) return;
+      bookIsOpen = true;
+      bookClosed.classList.add('hidden');
+      openPrompt.classList.add('hidden');
       setTimeout(() => {
-        show('rules');
-        book.classList.remove('folding');
-      }, 750);
+        bookOpen.classList.add('visible');
+        invitation.classList.add('visible');
+        landingActions.classList.add('visible');
+      }, 280);
+    }
+
+    bookClosed.addEventListener('click', openBook);
+    openPrompt.addEventListener('click', openBook);
+
+    setInterval(() => {
+      document.querySelectorAll('.line-action.primary .line').forEach(line => {
+        line.parentElement.classList.add('glow');
+        setTimeout(() => line.parentElement.classList.remove('glow'), 1400);
+      });
+    }, 7000);
+
+    document.getElementById('btn-return-last').addEventListener('click', () => {
+      bookIsOpen = true;
+      bookClosed.classList.add('hidden');
+      openPrompt.classList.add('hidden');
+      bookOpen.classList.add('visible');
+      invitation.classList.add('visible');
+      landingActions.classList.add('visible');
     });
 
-    document.getElementById('btn-example').addEventListener('click', () => show('poem'));
+    document.getElementById('btn-unfold').addEventListener('click', () => show('rules'));
+
+    document.getElementById('btn-examples').addEventListener('click', () => {
+      show('examples');
+      resetCarousel();
+    });
     document.getElementById('btn-begin').addEventListener('click', () => show('submit'));
-    document.getElementById('btn-begin-from-poem').addEventListener('click', () => show('submit'));
+    document.getElementById('btn-return-rules').addEventListener('click', () => show('landing'));
+
+    const track = document.getElementById('carousel-track');
+    const dotsContainer = document.getElementById('progress-dots');
+    const carouselActions = document.getElementById('carousel-actions');
+    const totalSlides = 13;
+    let current = 0;
+
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('span');
+      if (i === 0) dot.classList.add('active');
+      dotsContainer.appendChild(dot);
+    }
+    const dots = dotsContainer.querySelectorAll('span');
+
+    function goTo(index) {
+      current = Math.max(0, Math.min(index, totalSlides - 1));
+      track.style.transform = `translateX(-${current * 100}%)`;
+      dots.forEach((d, i) => d.classList.toggle('active', i === current));
+      if (current === totalSlides - 1) carouselActions.classList.add('visible');
+      else carouselActions.classList.remove('visible');
+    }
+    function resetCarousel() {
+      current = 0;
+      goTo(0);
+      carouselActions.classList.remove('visible');
+    }
+
+    let startX = 0;
+    track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (dx < -40) goTo(current + 1);
+      else if (dx > 40) goTo(current - 1);
+    }, { passive: true });
+
+    track.addEventListener('click', () => {
+      if (current < totalSlides - 1) goTo(current + 1);
+    });
+
+    document.getElementById('btn-ex-begin').addEventListener('click', () => show('landing'));
+    document.getElementById('btn-ex-start').addEventListener('click', () => show('submit'));
 
     const textMode = document.getElementById('text-mode');
     const voiceMode = document.getElementById('voice-mode');
@@ -670,8 +725,7 @@
       tab.addEventListener('click', () => {
         document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        const mode = tab.dataset.mode;
-        if (mode === 'text') {
+        if (tab.dataset.mode === 'text') {
           textMode.style.display = 'block';
           voiceMode.classList.remove('active');
         } else {
@@ -681,21 +735,14 @@
       });
     });
 
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let audioBlob = null;
-    let isRecording = false;
-
+    let mediaRecorder = null, audioChunks = [], audioBlob = null, isRecording = false;
     const recordBtn = document.getElementById('record-btn');
     const voiceStatus = document.getElementById('voice-status');
     const voiceControls = document.getElementById('voice-controls');
     const audioPlayback = document.getElementById('audio-playback');
 
     recordBtn.addEventListener('click', async () => {
-      if (isRecording) {
-        stopRecording();
-        return;
-      }
+      if (isRecording) { stopRecording(); return; }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
@@ -715,10 +762,8 @@
         voiceControls.classList.remove('show');
       } catch (err) {
         voiceStatus.textContent = 'Microphone not available';
-        console.warn(err);
       }
     });
-
     function stopRecording() {
       if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
@@ -726,56 +771,27 @@
         recordBtn.classList.remove('recording');
       }
     }
-
-    document.getElementById('btn-play').addEventListener('click', () => {
-      audioPlayback.play();
-    });
+    document.getElementById('btn-play').addEventListener('click', () => audioPlayback.play());
     document.getElementById('btn-rerecord').addEventListener('click', () => {
-      audioBlob = null;
-      audioPlayback.src = '';
+      audioBlob = null; audioPlayback.src = '';
       voiceControls.classList.remove('show');
       voiceStatus.textContent = 'Tap to record';
     });
 
     document.getElementById('btn-submit').addEventListener('click', () => {
-      const consent = document.getElementById('consent').checked;
-      if (!consent) {
+      if (!document.getElementById('consent').checked) {
         alert('Please give permission to continue.');
         return;
       }
-
       const mode = document.querySelector('.mode-tab.active').dataset.mode;
-      const name = document.getElementById('name-input').value.trim() || 'Anonymous';
-      let content = '';
-
-      if (mode === 'text') {
-        content = document.getElementById('text-input').value.trim();
-        if (!content) {
-          alert('Please write something, or switch to voice.');
-          return;
-        }
-      } else {
-        if (!audioBlob) {
-          alert('Please record a voice message first.');
-          return;
-        }
-        content = '[voice recording]';
+      if (mode === 'text' && !document.getElementById('text-input').value.trim()) {
+        alert('Please write something, or switch to voice.');
+        return;
       }
-
-      const entry = {
-        name,
-        mode,
-        content,
-        timestamp: new Date().toISOString()
-      };
-      console.log('New beginning received:', entry);
-
-      try {
-        const prev = JSON.parse(localStorage.getItem('bh3_submissions') || '[]');
-        prev.push(entry);
-        localStorage.setItem('bh3_submissions', JSON.stringify(prev.slice(-20)));
-      } catch (_) {}
-
+      if (mode === 'voice' && !audioBlob) {
+        alert('Please record a voice message first.');
+        return;
+      }
       show('thanks');
     });
 
@@ -783,17 +799,21 @@
       document.getElementById('text-input').value = '';
       document.getElementById('name-input').value = '';
       document.getElementById('consent').checked = false;
-      audioBlob = null;
-      audioPlayback.src = '';
+      audioBlob = null; audioPlayback.src = '';
       voiceControls.classList.remove('show');
       voiceStatus.textContent = 'Tap to record';
       document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
       document.querySelector('.mode-tab[data-mode="text"]').classList.add('active');
       textMode.style.display = 'block';
       voiceMode.classList.remove('active');
+      bookIsOpen = false;
+      bookClosed.classList.remove('hidden');
+      openPrompt.classList.remove('hidden');
+      bookOpen.classList.remove('visible');
+      invitation.classList.remove('visible');
+      landingActions.classList.remove('visible');
       show('landing');
     });
-
     document.getElementById('btn-progress').addEventListener('click', () => show('progress'));
     document.getElementById('btn-back-home').addEventListener('click', () => show('landing'));
   </script>
